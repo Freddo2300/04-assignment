@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>_04_assignment</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" Version="0.47.0" />
+    <PackageReference Include="Spectre.Console.ImageSharp" Version="0.47.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <CSFile Include="./src/App.cs" />
+    <CodeFiles Include="./src/Heros/**.cs" />
+    <CodeFiles Include="./src/Items/**.cs" />
+    <CodeFiles Include="./src/Utils/**.cs" />
+    <CodeFiles Include="./src/Interfaces/**.cs" /> 
+  </ItemGroup>
+  
+</Project>
