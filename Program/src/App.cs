@@ -1,8 +1,11 @@
+using System.Reflection;
 using Spectre.Console;
 
 using VideoGame.Src.Heros;
 using VideoGame.Src.Items;
 using VideoGame.Src.Utils;
+using VideoGame.Src.Interfaces;
+using VideoGame.Src.GameEngine;
 
 namespace VideoGame.Src
 {
@@ -13,22 +16,19 @@ namespace VideoGame.Src
             // Show the splash screen
             AnsiUtils.Splash();
 
-            bool confirm;
-            string characterSelection;
-            string name;
+            // Select character
+            string[] selections = AnsiUtils.SelectCharacter();
 
-            do
-            {
-                characterSelection = AnsiUtils.CharacterMenu();
+            string name = selections[0];
+            string heroType = selections[1];
 
-                name = AnsiUtils.AskName();
+            HeroType characterEnum = (HeroType)Enum.Parse(typeof(HeroType), heroType);
 
-                confirm = AnsiConsole.Confirm($"type: {characterSelection}\nname: {name}\n\nDo you confirm?", defaultValue: false);
-            } while (!confirm);
+            IHero playerHero = HeroFactory.CreateHero(characterEnum, name);
 
-            AnsiConsole.Clear();
+            Game game = new(playerHero);
 
-            Wizard hero = AnsiUtils.CreateCharacter(characterSelection, name) as Wizard;
+            game.StartGame();
         }
     }
 }

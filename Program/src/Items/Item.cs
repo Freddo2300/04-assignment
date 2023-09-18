@@ -13,16 +13,5 @@ namespace VideoGame.Src.Items
         public string? Name { get; set; }
         public int? RequiredLevel { get; set; }
         public Slot? EquipSlot { get; set; }
-
-        /*
-        public Item() {}
-
-        public Item(string name, int requiredLevel, Slot equipSlot)
-        {
-            Name = name;
-            RequiredLevel = requiredLevel;
-            EquipSlot = equipSlot;
-        }
-        */
     }
 }

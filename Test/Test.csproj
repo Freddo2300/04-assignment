@@ -22,4 +22,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Program/04-assignment.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,6 +1,6 @@
 namespace VideoGame.Src.Heros
 {
-    class HeroAttribute
+    public class HeroAttribute
     {
         public int? Strength { get; set; }
         public int? Dexterity { get; set; }

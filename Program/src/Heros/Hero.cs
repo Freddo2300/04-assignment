@@ -1,12 +1,13 @@
 using System.Text;
+using System.Globalization;
 using Spectre.Console;
-
+using Spectre.Console.Rendering;
 using VideoGame.Src.Items;
 
 namespace VideoGame.Src.Heros
 {
 
-    enum HeroType
+    public enum HeroType
     {
         Wizard,
         Archer,
@@ -14,7 +15,7 @@ namespace VideoGame.Src.Heros
         Barbarian
     }
 
-    abstract class Hero
+    public abstract class Hero
     {
         public string? Name { get; set; }
         public int? Level { get; set; } = 1;
@@ -39,13 +40,23 @@ namespace VideoGame.Src.Heros
         {
             try
             {
-                if (ValidWeaponTypes!.Any(w => w == weapon.Type))
+                if (!ValidWeaponTypes!.Any(w => w == weapon.Type))
                 {
                     throw new InvalidWeaponException(
-                        message: $"InvalidWeaponException: {weapon.Type} not allowed for hero type {Type}");
+                        message: $"InvalidWeaponException: {weapon.Type} not allowed for hero type {Type}"
+                    );
+                }
+
+                if (Level < weapon.RequiredLevel)
+                {
+                    throw new InvalidWeaponException(
+                        message: $"InvalidWeaponException: Required level {weapon.RequiredLevel} is too high. Keep training!"
+                    );
                 }
 
                 Equipment![Slot.Weapon] = weapon;
+
+                AnsiConsole.Write($"Successfully equipped weapon: {weapon.Name}");
             }
             catch (InvalidWeaponException e)
             {
@@ -62,42 +73,44 @@ namespace VideoGame.Src.Heros
         /// </summary>
         /// <param name="slot"></param>
         /// <param name="armor"></param>
-        public void Equip(Slot slot, Armor armor)
+        public void Equip(Armor armor)
         {
             try
             {
-                if (ValidArmorTypes!.Any(a => a == armor.Type))
+                if (!ValidArmorTypes!.Any(a => a == armor.Type))
                 {
                     throw new InvalidArmorException(
                         message: $"InvalidArmorException: {armor.Type} not allowed for hero type {Type}"
                     );
                 }
 
-                switch (slot)
+                if (Level < armor.RequiredLevel)
                 {
-                    case Slot.Weapon:
-                        {
-                            throw new InvalidArmorException(
-                                message: $"InvalidArmorException: cannot wear armor at slot {slot}"
-                            );
-                        }
-                    case Slot.Body:
-                        {
-                            Equipment![Slot.Body] = armor;
-                            break;
-                        }
-                    case Slot.Head:
-                        {
-                            Equipment![Slot.Head] = armor;
-                            break;
-                        }
-                    case Slot.Legs:
-                        {
-                            Equipment![Slot.Legs] = armor;
-                            break;
-                        }
-                    default: break;
+                    throw new InvalidArmorException(
+                        message: $"Required level {armor.RequiredLevel} is too high. Keep training!"
+                    );
                 }
+
+                switch (armor.EquipSlot)
+                {
+                    case Slot.Head:
+                    {
+                        Equipment[Slot.Head] = armor;
+                        break;
+                    }
+                    case Slot.Body:
+                    {   
+                        Equipment[Slot.Body] = armor;
+                        break;
+                    }
+                    case Slot.Legs:
+                    {
+                        Equipment[Slot.Legs] = armor;
+                        break;
+                    }
+                }
+
+                AnsiConsole.Write($"Successfully equipped armor: {armor.Name}");
             }
             catch (InvalidArmorException e)
             {
@@ -134,9 +147,9 @@ namespace VideoGame.Src.Heros
 
         public int[] GetTotalStats()
         {
-            int totalStrength = 0;
-            int totalDexterity = 0;
-            int totalIntelligence = 0;
+            int totalStrength = (int)LevelAttribute!.Strength!;
+            int totalDexterity = (int)LevelAttribute!.Dexterity!;
+            int totalIntelligence = (int)LevelAttribute!.Intelligence!;
 
             foreach (KeyValuePair<Slot, Item?> pair in Equipment)
             {
@@ -150,47 +163,59 @@ namespace VideoGame.Src.Heros
                 }
             }
 
-            return new[] {totalStrength, totalDexterity, totalIntelligence};
+            return new[] { totalStrength, totalDexterity, totalIntelligence };
         }
 
         public void Display(double totalDamage)
-        {   
-            // Initialise AnsiTable
-            Table table = new()
-            {
-                Title = new TableTitle(Name!)
-            };
+        {
+            StringBuilder sb = new();
 
-            // Add two blank table columns
-            table.AddColumn("").LeftAligned();
-            table.AddColumn("").RightAligned();
-
-            table.AddRow("Type:", Type.ToString()!);    // Add Type
-            table.AddRow("Level:", Level.ToString()!);  // Add Level
-            table.HorizontalBorder();                   // Draw border
-            
-            // Get total stats (including armorstats)
             int[] totalStats = GetTotalStats();
 
-            // Make barchartitems
-            var items = new List<BarChartItem>
-            {
-                new("strength", (double)LevelAttribute!.Strength!, Color.Red),
-                new("dexterity", (double)LevelAttribute!.Dexterity!, Color.Green),
-                new("intelligence", (double)LevelAttribute!.Intelligence!, Color.Blue),
-            };
+            CultureInfo cultureInfo = new("en-GB");
+            string format = "|{0,-20}{1,20}|";
 
-            // Add barchartitems to barchart
-            var barChart = new BarChart().AddItems(items);
+            sb.AppendFormat(cultureInfo, "*{0, -18}{1,18}*", new string('-', 20), new string('-', 20));
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, "|{0, -9}{1,31}|", "CHARACTER", new string('+', 31));
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Name", Name);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Type", Type);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Level", Level);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, new string('-', 20), new string('-', 20));
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, "|{0, -9}{1,31}|", "EQUIPMENT", new string('+', 31));
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Weapon", Equipment[Slot.Weapon]?.Name ?? null);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Head", Equipment[Slot.Head]?.Name ?? null);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Body", Equipment[Slot.Body]?.Name ?? null);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Legs", Equipment[Slot.Legs]?.Name ?? null);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, new string('-', 20), new string('-', 20));
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, "|{0, -5}{1,35}|", "STATS", new string('+', 35));
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, "|{0, -20}{1,20:N2}|", "Damage", totalDamage);
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Strength", $"{LevelAttribute!.Strength} (tot: {totalStats[0]})");
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Dexterity", $"{LevelAttribute!.Dexterity} (tot: {totalStats[1]})");
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Intelligence", $"{LevelAttribute!.Intelligence} (tot: {totalStats[2]})");
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, "|{0,40}|", new string(' ', 40));
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, format, "Total", totalStats.Sum());
+            sb.AppendLine();
+            sb.AppendFormat(cultureInfo, "*{0, -18}{1,18}*", new string('-', 20), new string('-', 20));
 
-            // Add stats and barchart
-            table.AddRow(new Text("Stats:"), barChart);
-
-            // Finally, add damage
-            table.AddRow("Damage", totalDamage.ToString());
-
-            // Display
-            AnsiConsole.Write(table);
+            Console.WriteLine(sb);
         }
 
         /// <summary>

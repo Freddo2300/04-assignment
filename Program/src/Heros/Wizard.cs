@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 using VideoGame.Src.Items;
 using VideoGame.Src.Interfaces;
 
@@ -26,8 +28,11 @@ namespace VideoGame.Src.Heros
         public void LevelUp()
         {
             Level++;
-            
+
             LevelAttribute!.IncreaseStat(new HeroAttribute(1, 1, 5));
+
+            AnsiConsole.WriteLine($"Level Up: {Level - 1} => {Level}");
+            AnsiConsole.WriteLine($"\tSTR: {LevelAttribute.Strength}\n\tDEX: {LevelAttribute.Dexterity}\n\tINT: {LevelAttribute.Intelligence}");
         }
 
         public double CalculateHeroDamage()
@@ -41,7 +46,7 @@ namespace VideoGame.Src.Heros
                 weaponDamage += (double)equippedWeapon.Damage!;
             }
 
-            weaponDamage *= 1.0 + (double)LevelAttribute!.Intelligence! / 100.0;
+            weaponDamage *= 1.0 + GetTotalStats()[2] / 100.0;
 
             return weaponDamage;
         }

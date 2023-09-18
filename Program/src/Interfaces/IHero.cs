@@ -3,7 +3,7 @@ namespace VideoGame.Src.Interfaces
     /// <summary>
     /// Hero interface to implement specialised behaviour inside hero sub-classes.
     /// </summary>
-    interface IHero
+    public interface IHero
     {   
         /// <summary>
         /// Level up a hero.

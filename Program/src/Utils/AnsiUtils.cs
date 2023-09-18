@@ -1,5 +1,7 @@
 using Spectre.Console;
+
 using VideoGame.Src.Heros;
+using VideoGame.Src.Interfaces;
 
 namespace VideoGame.Src.Utils
 {
@@ -69,10 +71,10 @@ namespace VideoGame.Src.Utils
             }
 
             table.AddRow(
-                new CanvasImage("images/archer_character.png").MaxWidth(16),
-                new CanvasImage("images/barbarian_character.png").MaxWidth(16),
-                new CanvasImage("images/swashbuckler_character.png").MaxWidth(16),
-                new CanvasImage("images/wizard_character.png").MaxWidth(16)
+                new CanvasImage("images/archer_character.png").MaxWidth(9),
+                new CanvasImage("images/barbarian_character.png").MaxWidth(9),
+                new CanvasImage("images/swashbuckler_character.png").MaxWidth(9),
+                new CanvasImage("images/wizard_character.png").MaxWidth(9)
             );
 
             table.AddRow(
@@ -110,47 +112,41 @@ namespace VideoGame.Src.Utils
 
             AnsiConsole.Write(table);
 
+            AnsiConsole.WriteLine();
+
+            AnsiConsole.Write(new Markup("[bold underline yellow on red]Which character will you choose?[/]"));
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.WriteLine();
+
             var heroSelection = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .PageSize(10)
-                    .AddChoices(names)
+                    .AddChoices(names).HighlightStyle(new Style(Color.Yellow, Color.Red, Decoration.Bold))
                 );
 
             return heroSelection;
         }
 
-        public static object CreateCharacter(string characterType, string name)
+        public static string[] SelectCharacter()
         {
-            try
-            {
-                switch (characterType)
-                {
-                    case "Archer":
-                        {
-                            return new Archer(name);
-                        }
-                    case "Barbarian":
-                        {
-                            return new Barbarian(name);
-                        }
-                    case "SwashBuckler":
-                        {
-                            return new SwashBuckler(name);
-                        }
-                    case "Wizard":
-                        {
-                            return new Wizard(name);
-                        }
-                    default:
-                        throw new Exception($"Invalid character {characterType}");
-                }
-            }
-            catch (Exception e)
-            {   
-                AnsiConsole.Write(e.Message);
-                return false;
-            }
+            bool confirm;
+            string characterSelection;
+            string name;
 
+            do
+            {
+                characterSelection = CharacterMenu();
+
+                name = AskName();
+
+                confirm = AnsiConsole.Confirm($"type: {characterSelection}\nname: {name}\n\nDo you confirm?", defaultValue: false);
+            
+            } while (!confirm);
+
+            AnsiConsole.Clear();
+
+            return new[] {name, characterSelection};
         }
     }
 }
